@@ -24,6 +24,19 @@ Group by mp.location, population
 order by PercentPopulationInfected desc
 
 
+--Percent of Global Population Infected
+select 
+	MAX(mp.total_cases) as TotalWorldCases,
+	MAX(pop.population) as TotalWorldPopulation,
+	MAX(mp.total_cases)/MAX(pop.population) as PercentPopulationInfected
+from PortfolioProject..monkeypox mp
+left join PortfolioProject..populations pop on mp.location = pop.location 
+           and mp.date = pop.date
+Where mp.location LIKE '%world%'
+--Group by pop.continent
+--order by TotalCases desc
+
+
 --Total Infections by Continent
 
 select 
