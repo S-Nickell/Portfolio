@@ -1,16 +1,33 @@
--- Left Join POC
+--Death Percentage
 
-select 
-	mp.location,
-    pop.population
-from PortfolioProject..monkeypox mp
-left join PortfolioProject..populations pop on mp.location = pop.location 
-           and mp.date = pop.date
-Where population is not null and continent is not null
-Group by mp.location, population
-	
-	
---Percent of Population Infected
+Select SUM(new_cases) as total_cases, 
+SUM(cast(new_deaths as int)) as total_deaths, 
+SUM(cast(new_deaths as int))/SUM(New_Cases)*100 as DeathPercentage
+From PortfolioProject..monkeypox
+order by 1,2
+
+
+--Death Count by location
+
+Select location, SUM(cast(new_deaths as int)) as TotalDeathCount
+From PortfolioProject..monkeypox
+Where location not in ('World', 'European Union', 'International')
+Group by location
+order by TotalDeathCount desc
+
+
+--Infected Count by Continent
+
+Select pop.continent, SUM(mp.new_cases) as TotalCases
+From PortfolioProject..populations pop
+left join PortfolioProject..monkeypox mp on pop.location = mp.location
+			and pop.date = mp.date
+Where pop.continent is not null
+Group by pop.continent
+order by TotalCases desc
+
+
+--Percent of Population Infected by country
 
 select 
 	mp.location,
@@ -24,7 +41,22 @@ Group by mp.location, population
 order by PercentPopulationInfected desc
 
 
+--Time series population infection
+
+Select mp.Location, pop.Population, mp.date, MAX(mp.total_cases) as HighestInfectionCount,  Max((mp.total_cases/pop.population))*100 as PercentPopulationInfected
+From PortfolioProject..monkeypox mp
+left join PortfolioProject..populations pop on mp.location = pop.location
+			and mp.date = pop.date
+--Where location like '%states%'
+Group by mp.location, pop.population, mp.date
+order by PercentPopulationInfected desc
+
+
+-----------------------Unused in Tableau-----------------------
+
+
 --Percent of Global Population Infected
+
 select 
 	MAX(mp.total_cases) as TotalWorldCases,
 	MAX(pop.population) as TotalWorldPopulation,
@@ -33,11 +65,10 @@ from PortfolioProject..monkeypox mp
 left join PortfolioProject..populations pop on mp.location = pop.location 
            and mp.date = pop.date
 Where mp.location LIKE '%world%'
---Group by pop.continent
---order by TotalCases desc
 
 
---Total Infections by Continent
+--Total Cases by continent (old)
+
 
 select 
 	pop.continent,
@@ -87,4 +118,3 @@ left join PortfolioProject..populations pop on mp.location = pop.location
            and mp.date = pop.date
 Where population is not null and continent is not null
 Group by mp.location, population
---order by PercentPopulationInfected desc
